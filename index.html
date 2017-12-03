@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - terrain</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+	<body>
+		<div id="container"><br /><br /><br /><br /><br />Generating world...</div>
+		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl terrain demo<br />(left click: forward, right click: backward)</div>
+		
+		<script src="./build/three.js"></script>
+		<script src="./build/FirstPersonControls.js"></script>
+		<script src="./build/CopyShader.js"></script>
+		<script src="./build/DotScreenShader.js"></script>
+		<script src="./build/RGBShiftShader.js"></script>
+		
+		<script src="./build/EffectComposer.js"></script>
+		<script src="./build/RenderPass.js"></script>
+		<script src="./build/ShaderPass.js"></script>
+	</body>
+	
+	<script>
+	var container;
+	var camera, controls, scene, renderer;
+	var clock = new THREE.Clock();
+	
+	function render() 
+	{
+		controls.update(clock.getDelta());
+		composer.render();
+		//renderer.render( scene, camera );
+		requestAnimationFrame(render);
+	}
+	
+	container = document.getElementById( 'container' );
+	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color( 0xbfd1e5 );
+	controls = new THREE.FirstPersonControls( camera );
+	controls.movementSpeed = 0;
+	controls.lookSpeed = 0.1;
+	renderer = new THREE.WebGLRenderer();
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	container.innerHTML = "";
+	container.appendChild( renderer.domElement );
+	
+	
+	composer = new THREE.EffectComposer( renderer );
+	composer.addPass( new THREE.RenderPass( scene, camera ) );
+	var effect = new THREE.ShaderPass( THREE.DotScreenShader );
+	effect.uniforms[ 'scale' ].value = 4;
+	composer.addPass( effect );
+	var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+	effect.uniforms[ 'amount' ].value = 0.0015;
+	effect.renderToScreen = true;
+	composer.addPass( effect );
+	
+	
+	var pointsGeometry = new THREE.Geometry();
+
+	for ( var i = 0; i < 10000; i ++ ) 
+	{
+
+		var point = new THREE.Vector3();
+		point.x = THREE.Math.randFloatSpread( 100 );
+		point.y = THREE.Math.randFloatSpread( 100 );
+		point.z = THREE.Math.randFloatSpread( 100 );
+
+		pointsGeometry.vertices.push( point );
+	}
+
+	var pointsMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
+
+	var pointField = new THREE.Points( pointsGeometry, pointsMaterial );
+
+	scene.add( pointField );
+	
+	render();
+	</script>
