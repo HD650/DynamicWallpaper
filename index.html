@@ -24,19 +24,55 @@
 	var container;
 	var camera, controls, scene, renderer;
 	var clock = new THREE.Clock();
-	
+	var theta=0.0;
+	var radius=150;
+
+	function createImage() 
+	{
+		var canvas = document.createElement( 'canvas' );
+		canvas.width = 256;
+		canvas.height = 256;
+		var context = canvas.getContext( '2d' );
+		context.fillStyle = 'rgb(' + Math.floor( Math.random() * 256 ) + ',' + Math.floor( Math.random() * 256 ) + ',' + Math.floor( Math.random() * 256 ) + ')';
+		context.fillRect( 0, 0, 256, 256 );
+		return canvas;
+	}
+
 	function render() 
 	{
-		controls.update(clock.getDelta());
+		var geometry = new THREE.SphereBufferGeometry( 50, Math.random() * 32, Math.random() * 16 );
+		//var texture = new THREE.CanvasTexture( createImage() );
+		var material = new THREE.MeshBasicMaterial( { wireframe: true } );
+		var mesh = new THREE.Mesh( geometry, material );
+		mesh.position.x=0;
+		mesh.position.y=0;
+		mesh.position.z=0;
+		scene.add( mesh );
+		
+		camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+		camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+		camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+		camera.lookAt( mesh.position );
+		theta+=0.1;
+
+		//controls.update(clock.getDelta());
 		composer.render();
 		//renderer.render( scene, camera );
 		requestAnimationFrame(render);
+
+		scene.remove( mesh );
+		//texture.dispose();
+		geometry.dispose();
+		material.dispose();
 	}
 	
 	container = document.getElementById( 'container' );
-	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
+	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 20000 );
+	camera.position.z=150;
+	camera.position.y=50;
+	camera.lookAt( new THREE.Vector3(0,0,0) );
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color( 0xbfd1e5 );
+	scene.background = new THREE.Color( 0x00000000 );
 	controls = new THREE.FirstPersonControls( camera );
 	controls.movementSpeed = 0;
 	controls.lookSpeed = 0.1;
@@ -58,24 +94,17 @@
 	composer.addPass( effect );
 	
 	
-	var pointsGeometry = new THREE.Geometry();
+	var dotG=new THREE.Geometry();
 
-	for ( var i = 0; i < 10000; i ++ ) 
-	{
-
-		var point = new THREE.Vector3();
-		point.x = THREE.Math.randFloatSpread( 100 );
-		point.y = THREE.Math.randFloatSpread( 100 );
-		point.z = THREE.Math.randFloatSpread( 100 );
-
-		pointsGeometry.vertices.push( point );
-	}
-
-	var pointsMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
-
-	var pointField = new THREE.Points( pointsGeometry, pointsMaterial );
-
-	scene.add( pointField );
+	for(var z=-200;z<200;z+=10)
+		for(var y=-200;y<200;y+=10)
+		    for(var x=-200;x<200;x+=10)
+		    {
+		        dotG.vertices.push(new THREE.Vector3(x,y,z));
+		    }
+	var dotM=new THREE.PointsMaterial({size:1,sizeAttenuation:false});
+	var dot=new THREE.Points(dotG,dotM);
+	scene.add(dot);
 	
 	render();
 	</script>
